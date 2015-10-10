@@ -12,8 +12,9 @@ object Application extends Controller {
     Ok("Fue GET")
   }}
 
-  def testPost = Action{ implicit req => {
+  def testPost = Action{ req => {
     val body = req.body
+    println(body)
     Ok("Fue POST -> \n" + body)
   }}
 }
