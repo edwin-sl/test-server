@@ -1,7 +1,9 @@
-import play.Project._
-
 name := "TestServer"
 
 version := "1.0"
 
-playScalaSettings
+lazy val `root` = (project in file(".")).enablePlugins(PlayScala)
+
+scalaVersion := "2.11.7"
+
+libraryDependencies ++= Seq( jdbc , cache , ws )
