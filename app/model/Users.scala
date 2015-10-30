@@ -15,7 +15,7 @@ object Users {
     users.find(_.user == user).fold("")(_.id)
   }
 
-  def getUsers(): List[String] = {
+  def getUsers: List[String] = {
     users.map(_.user)
   }
 }

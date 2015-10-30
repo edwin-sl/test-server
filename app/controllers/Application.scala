@@ -1,6 +1,6 @@
 package controllers
 
-import model.Users
+import model.{User, Users}
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.{WSResponse, WS}
 import play.api.mvc._
@@ -54,14 +54,18 @@ object Application extends Controller {
   }
 
   def registerAndroid = Action{ implicit req => {
-    req.method match {
+    val user_data: (String, String) = req.method match {
       case "GET" => (req.getQueryString("user").get, req.getQueryString("id").get)
       case "POST" => {
         val body = req.body.asJson.get
-        (body.\("user"), body.\("id"))
+        (body.\("user").as[String], body.\("id").as[String])
       }
     }
-
-    Ok(req.method)
+    Users.addUser(User(user_data._1, user_data._2))
+    Ok("Users: " + Users.getUsers.size)
   }}
+
+  def showUsers = Action{
+    Ok(Users.getUsers.mkString("\n"))
+  }
 }
