@@ -5,10 +5,10 @@ package model
  */
 case class User(user: String, id: String)
 object Users {
-  val users = List.empty[User]
+  var users = List.empty[User]
 
   def addUser(user: User) = {
-    users.+:(user)
+    users = users.::(user)
   }
 
   def getId(user: String): String = {
