@@ -15,7 +15,15 @@ object Users {
     users.find(_.user == user).fold("")(_.id)
   }
 
+  def getIds: List[String] = {
+    users.map(_.id)
+  }
+
   def getUsers: List[String] = {
     users.map(_.user)
+  }
+
+  def cleanUsers(): Unit = {
+    users = List.empty[User]
   }
 }

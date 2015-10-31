@@ -5,13 +5,17 @@
 # Home page
 GET         /                    controllers.Application.index
 
-GET         /porget              controllers.Application.testGet
-POST        /porpost             controllers.Application.testPost
-POST        /sendgcm/:user       controllers.Application.sendMessage(user)
-GET         /notify/:user        controllers.Application.sendNotification(user)
-GET         /register            controllers.Application.registerAndroid
-POST        /register            controllers.Application.registerAndroid
-GET         /users               controllers.Application.showUsers
+GET         /porget             controllers.Application.testGet
+POST        /porpost            controllers.Application.testPost
+POST        /sendgcm            controllers.Application.broadcastMessage
+POST        /sendgcm/:user      controllers.Application.sendMessage(user)
+GET         /notify             controllers.Application.broadcastNotification
+GET         /notify/:user       controllers.Application.sendNotification(user)
+GET         /register           controllers.Application.registerAndroid
+POST        /register           controllers.Application.registerAndroid
+GET         /clean              controllers.Application.cleanUsers
+GET         /users              controllers.Application.showUsers
+GET         /ids                controllers.Application.showIds
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file        controllers.Assets.at(path="/public", file)

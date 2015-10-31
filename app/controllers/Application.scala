@@ -50,9 +50,25 @@ object Application extends Controller {
     )
 
     Ok(sendGCM(msg).body)
-  }
+  }}
 
-  }
+  def broadcastNotification = Action{ implicit req => {
+    val ids = Users.getIds
+    val msg = Json.obj("to" -> ids)
+
+    Ok(sendGCM(msg))
+  }}
+
+  def broadcastMessage = Action{ implicit req => {
+    val data = req.body.asJson.getOrElse(Json.obj("status" -> "failed"))
+    val ids = Users.getIds
+    val msg = Json.obj(
+      "data" -> data,
+      "to" -> ids
+    )
+
+    Ok(sendGCM(msg))
+  }}
 
   def registerAndroid = Action{ implicit req => {
     val user_data: (String, String) = req.method match {
@@ -66,7 +82,16 @@ object Application extends Controller {
     Ok("Users: " + Users.getUsers.size)
   }}
 
+  def showIds = Action{
+    Ok(Users.getUsers.mkString("\n"))
+  }
+
   def showUsers = Action{
     Ok(Users.getUsers.mkString("\n"))
+  }
+
+  def cleanUsers = Action{
+    Users.cleanUsers()
+    Ok("OK")
   }
 }
