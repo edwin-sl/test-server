@@ -7,8 +7,12 @@ case class User(user: String, id: String)
 object Users {
   var users = List.empty[User]
 
-  def addUser(user: User) = {
+  def addUser(user: User): Boolean = {
+    if(users.exists(_.user == user.user))
+      return false
+
     users = users.::(user)
+    true
   }
 
   def getId(user: String): String = {

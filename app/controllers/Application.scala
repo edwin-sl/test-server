@@ -80,8 +80,12 @@ object Application extends Controller {
         (body.\("user").as[String], body.\("id").as[String])
       }
     }
-    Users.addUser(User(user_data._1, user_data._2))
-    Ok("Users: " + Users.getUsers.size)
+    val response = if(Users.addUser(User(user_data._1, user_data._2)))
+      Json.obj("status" -> "ok")
+    else
+      Json.obj("status" -> "fail")
+
+    Ok(response)
   }}
 
   def showIds = Action{
