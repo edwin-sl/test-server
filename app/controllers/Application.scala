@@ -25,6 +25,7 @@ object Application extends Controller {
   }}
 
   def sendGCM(msg: JsValue): WSResponse = {
+    println("Message -> \n" + Json.prettyPrint(msg))
     val send = WS.url("https://gcm-http.googleapis.com/gcm/send")
       .withHeaders(
         ("Content-Type", "application/json"),
@@ -41,7 +42,7 @@ object Application extends Controller {
   }}
 
   def sendMessage(user: String) = Action{ implicit req => {
-    val data = req.body.asJson.getOrElse(Json.obj())
+    val data = req.body.asJson.getOrElse(Json.obj("status" -> "failed"))
     val id = Users.getId(user)
     val msg = Json.obj(
       "data" -> data,

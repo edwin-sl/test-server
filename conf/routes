@@ -7,7 +7,7 @@ GET         /                    controllers.Application.index
 
 GET         /porget              controllers.Application.testGet
 POST        /porpost             controllers.Application.testPost
-#GET        /sendgcm             controllers.Application.sendGCM
+POST        /sendgcm/:user       controllers.Application.sendMessage(user)
 GET         /notify/:user        controllers.Application.sendNotification(user)
 GET         /register            controllers.Application.registerAndroid
 POST        /register            controllers.Application.registerAndroid
