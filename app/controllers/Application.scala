@@ -1,6 +1,7 @@
 package controllers
 
 import model.{User, Users}
+import play.api.Play
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.{WSResponse, WS}
 import play.api.mvc._
@@ -26,10 +27,11 @@ object Application extends Controller {
 
   def sendGCM(msg: JsValue): WSResponse = {
     println("Message -> \n" + Json.prettyPrint(msg))
+    val key = Play.current.configuration.getStringList("google.key").get.get(0)
     val send = WS.url("https://gcm-http.googleapis.com/gcm/send")
       .withHeaders(
         ("Content-Type", "application/json"),
-        ("Authorization", "key=AIzaSyDF1bcfh7XGvyeD7RKVsMNW5nG523NR__M"))
+        ("Authorization", "key=" + key))
     .post(msg)
     Await.result(send, Duration.Inf)
   }
@@ -54,9 +56,9 @@ object Application extends Controller {
 
   def broadcastNotification = Action{ implicit req => {
     val ids = Users.getIds
-    val msg = Json.obj("to" -> ids)
+    val msg = Json.obj("registration_ids" -> ids)
 
-    Ok(sendGCM(msg))
+    Ok(sendGCM(msg).body)
   }}
 
   def broadcastMessage = Action{ implicit req => {
@@ -64,10 +66,10 @@ object Application extends Controller {
     val ids = Users.getIds
     val msg = Json.obj(
       "data" -> data,
-      "to" -> ids
+      "registration_ids" -> ids
     )
 
-    Ok(sendGCM(msg))
+    Ok(sendGCM(msg).body)
   }}
 
   def registerAndroid = Action{ implicit req => {
