@@ -27,7 +27,7 @@ object Application extends Controller {
 
   def sendGCM(msg: JsValue): WSResponse = {
     println("Message -> \n" + Json.prettyPrint(msg))
-    val key = Play.current.configuration.getStringList("google.key").get.get(0)
+    val key = Play.current.configuration.getString("google.key").get
     val send = WS.url("https://gcm-http.googleapis.com/gcm/send")
       .withHeaders(
         ("Content-Type", "application/json"),
@@ -89,15 +89,17 @@ object Application extends Controller {
   }}
 
   def showIds = Action{
-    Ok(Users.getUsers.mkString("\n"))
+    Ok(Json.obj("status" -> "ok",
+      "data" -> Users.getIds))
   }
 
   def showUsers = Action{
-    Ok(Users.getUsers.mkString("\n"))
+    Ok(Json.obj("status" -> "ok",
+      "data" -> Users.getUsers))
   }
 
   def cleanUsers = Action{
     Users.cleanUsers()
-    Ok("OK")
+    Ok(Json.obj("status" -> "ok"))
   }
 }
