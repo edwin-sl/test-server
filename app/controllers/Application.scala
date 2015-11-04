@@ -25,7 +25,7 @@ object Application extends Controller {
     Ok("Fue POST -> \n" + body)
   }}
 
-  def sendGCM(msg: JsValue): WSResponse = {
+  def sendGCM(msg: JsValue): JsValue = {
     println("Message -> \n" + Json.prettyPrint(msg))
     val key = Play.current.configuration.getString("google.key").get
     val send = WS.url("https://gcm-http.googleapis.com/gcm/send")
@@ -33,32 +33,70 @@ object Application extends Controller {
         ("Content-Type", "application/json"),
         ("Authorization", "key=" + key))
     .post(msg)
-    Await.result(send, Duration.Inf)
+    val response = Await.result(send, Duration.Inf)
+    val jsonResponse = response.json
+    Json.obj(
+      "success" -> jsonResponse.\("success").as[Int],
+      "failure" -> jsonResponse.\("failure").as[Int])
   }
 
   def sendNotification(user: String) = Action{ implicit req => {
     val id = Users.getId(user)
-    val msg = Json.obj("to" -> id)
+    val response = if(id.isEmpty) {
+      Json.obj("status" -> "error")
+    } else {
+      val msg = Json.obj("to" -> id)
 
-    Ok(sendGCM(msg).body)
+      val msgJson = sendGCM(msg)
+      Json.obj(
+        "status" -> {
+          if (msgJson.\("failure").as[Int] > 0)
+            "ok"
+          else "error"
+        },
+        "data" -> msgJson
+      )
+    }
+    Ok(response)
   }}
 
   def sendMessage(user: String) = Action{ implicit req => {
     val data = req.body.asJson.getOrElse(Json.obj("status" -> "failed"))
     val id = Users.getId(user)
-    val msg = Json.obj(
-      "data" -> data,
-      "to" -> id
-    )
+    val response = if(id.isEmpty) {
+      Json.obj("status" -> "error")
+    } else {
+      val msg = Json.obj(
+        "data" -> data,
+        "to" -> id
+      )
 
-    Ok(sendGCM(msg).body)
+      val msgJson = sendGCM(msg)
+      Json.obj(
+        "status" -> {
+          if (msgJson.\("failure").as[Int] > 0)
+            "ok"
+          else "error"
+        },
+        "data" -> msgJson
+      )
+    }
+    Ok(response)
   }}
 
   def broadcastNotification = Action{ implicit req => {
     val ids = Users.getIds
     val msg = Json.obj("registration_ids" -> ids)
 
-    Ok(sendGCM(msg).body)
+    val msgJson = sendGCM(msg)
+    val response = Json.obj(
+      "status" -> {
+        if(msgJson.\("failure").as[Int] > 0)
+          "ok" else "error"
+      },
+      "data" -> msgJson
+    )
+    Ok(response)
   }}
 
   def broadcastMessage = Action{ implicit req => {
@@ -69,7 +107,15 @@ object Application extends Controller {
       "registration_ids" -> ids
     )
 
-    Ok(sendGCM(msg).body)
+    val msgJson = sendGCM(msg)
+    val response = Json.obj(
+      "status" -> {
+        if(msgJson.\("failure").as[Int] > 0)
+          "ok" else "error"
+      },
+      "data" -> msgJson
+    )
+    Ok(response)
   }}
 
   def registerAndroid = Action{ implicit req => {
