@@ -35,6 +35,7 @@ object Application extends Controller {
     .post(msg)
     val response = Await.result(send, Duration.Inf)
     println("Google Response -> " + response.body)
+    response.body
     val jsonResponse = response.json
     Json.obj(
       "success" -> jsonResponse.\("success").as[Int],
