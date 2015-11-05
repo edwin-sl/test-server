@@ -28,15 +28,14 @@ object Application extends Controller {
   def sendGCM(msg: JsValue): JsValue = {
     println("Message -> \n" + Json.prettyPrint(msg))
     val key = Play.current.configuration.getString("google.key").get
-    println("GOOGLE KEY -> " + key)
     val send = WS.url("https://gcm-http.googleapis.com/gcm/send")
       .withHeaders(
         ("Content-Type", "application/json"),
         ("Authorization", "key=" + key))
     .post(msg)
     val response = Await.result(send, Duration.Inf)
-    println("Google Response -> " + response.body)
-    response.body
+    println("Response -> " + response.body)
+//    response.body
     val jsonResponse = response.json
     Json.obj(
       "success" -> jsonResponse.\("success").as[Int],
