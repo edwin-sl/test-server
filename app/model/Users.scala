@@ -8,6 +8,7 @@ object Users {
   var users = List.empty[User]
 
   def addUser(user: User): Boolean = {
+    RedisManager.setValue(user.user, user.id)
     if(users.exists(_.user == user.user))
       return false
 
@@ -28,6 +29,7 @@ object Users {
   }
 
   def cleanUsers(): Unit = {
+    RedisManager.cleanRedis
     users = List.empty[User]
   }
 }
