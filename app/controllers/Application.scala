@@ -28,6 +28,7 @@ object Application extends Controller {
   def sendGCM(msg: JsValue): JsValue = {
     println("Message -> \n" + Json.prettyPrint(msg))
     val key = Play.current.configuration.getString("google.key").get
+    println("GOOGLE KEY -> " + key)
     val send = WS.url("https://gcm-http.googleapis.com/gcm/send")
       .withHeaders(
         ("Content-Type", "application/json"),
@@ -52,9 +53,8 @@ object Application extends Controller {
       val msgJson = sendGCM(msg)
       Json.obj(
         "status" -> {
-          if (msgJson.\("failure").as[Int] > 0)
-            "ok"
-          else "error"
+          if (msgJson.\("success").as[Int] > 0)
+            "ok" else "error"
         },
         "data" -> msgJson
       )
@@ -76,9 +76,8 @@ object Application extends Controller {
       val msgJson = sendGCM(msg)
       Json.obj(
         "status" -> {
-          if (msgJson.\("failure").as[Int] > 0)
-            "ok"
-          else "error"
+          if (msgJson.\("success").as[Int] > 0)
+            "ok" else "error"
         },
         "data" -> msgJson
       )
@@ -93,7 +92,7 @@ object Application extends Controller {
     val msgJson = sendGCM(msg)
     val response = Json.obj(
       "status" -> {
-        if(msgJson.\("failure").as[Int] > 0)
+        if(msgJson.\("success").as[Int] > 0)
           "ok" else "error"
       },
       "data" -> msgJson
@@ -112,7 +111,7 @@ object Application extends Controller {
     val msgJson = sendGCM(msg)
     val response = Json.obj(
       "status" -> {
-        if(msgJson.\("failure").as[Int] > 0)
+        if(msgJson.\("success").as[Int] > 0)
           "ok" else "error"
       },
       "data" -> msgJson
