@@ -25,6 +25,11 @@ object RedisManager {
     r.keys().fold(List.empty[String])(_.map(_.getOrElse("")))
   }
 
+  def getValues: List[String] = {
+    val keys = getKeys
+    r.mget(keys.head, keys.tail).fold(List.empty[String])(_.map(_.getOrElse("")))
+  }
+
   def cleanRedis = {
     r.flushall
   }
