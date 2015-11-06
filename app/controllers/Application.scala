@@ -134,10 +134,10 @@ object Application extends Controller {
     Ok(response)
   }}
 
-//  def showIds = Action{
-//    Ok(Json.obj("status" -> "ok",
-//      "data" -> Users.getIds))
-//  }
+  def showIds = Action{
+    Ok(Json.obj("status" -> "ok",
+      "data" -> Users.getIds))
+  }
 
   def showUsers = Action{
     Ok(Json.obj("status" -> "ok",
