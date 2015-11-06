@@ -128,8 +128,10 @@ object Application extends Controller {
 
     val response = if(user_data._1.isEmpty || user_data._2.isEmpty)
       Json.obj("status" -> "error")
-    else if(Users.addUser(user_data._1, user_data._2))
+    else if(Users.addUser(user_data._1, user_data._2)) {
+      broadcastNotification
       Json.obj("status" -> "ok")
+    }
     else
       Json.obj("status" -> "error")
 
