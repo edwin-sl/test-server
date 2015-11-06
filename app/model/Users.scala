@@ -8,12 +8,13 @@ object Users {
   var users = List.empty[User]
 
   def addUser(user: User): Boolean = {
-    RedisManager.setValue(user.user, user.id)
-    if(users.exists(_.user == user.user))
-      return false
 
-    users = users.::(user)
-    true
+    (RedisManager.setValue _).tupled(User.unapply(user).get)
+//    if(users.exists(_.user == user.user))
+//      return false
+//
+//    users = users.::(user)
+//    true
   }
 
   def getId(user: String): String = {
