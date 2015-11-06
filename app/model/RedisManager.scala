@@ -27,7 +27,8 @@ object RedisManager {
 
   def getValues: List[String] = {
     val keys = getKeys
-    r.mget(null, keys:_*).fold(List.empty[String])(_.map(_.getOrElse("")))
+    r.mget(keys.head, keys.tail : _*)
+      .fold(List.empty[String])(_.map(_.getOrElse("")))
   }
 
   def cleanRedis = {
