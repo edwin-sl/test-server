@@ -100,7 +100,7 @@ object Application extends Controller {
   }}
 
   def broadcastMessage = Action{ implicit req => {
-    val data = req.body.asJson.getOrElse(Json.obj("status" -> "failed"))
+    val data = req.body.asJson.getOrElse(Json.obj("status" -> "error"))
     val ids = Users.getIds
     val msg = Json.obj(
       "data" -> data,
@@ -120,16 +120,18 @@ object Application extends Controller {
 
   def registerAndroid = Action{ implicit req => {
     val user_data: (String, String) = req.method match {
-      case "GET" => (req.getQueryString("user").get, req.getQueryString("id").get)
+      case "GET" => (req.getQueryString("user").getOrElse(""), req.getQueryString("id").getOrElse(""))
       case "POST" => {
-        val body = req.body.asJson.get
-        (body.\("user").as[String], body.\("id").as[String])
+        req.body.asJson.fold(("", ""))(body => (body.\("user").asOpt[String].getOrElse(""), body.\("id").asOpt[String].getOrElse("")))
       }
     }
-    val response = if(Users.addUser(user_data._1, user_data._2))
+
+    val response = if(user_data._1.isEmpty || user_data._2.isEmpty)
+      Json.obj("status" -> "error")
+    else if(Users.addUser(user_data._1, user_data._2))
       Json.obj("status" -> "ok")
     else
-      Json.obj("status" -> "fail")
+      Json.obj("status" -> "error")
 
     Ok(response)
   }}

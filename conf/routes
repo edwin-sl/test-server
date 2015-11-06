@@ -13,7 +13,7 @@ GET         /notify             controllers.Application.broadcastNotification
 GET         /notify/:user       controllers.Application.sendNotification(user)
 GET         /register           controllers.Application.registerAndroid
 POST        /register           controllers.Application.registerAndroid
-GET         /clean              controllers.Application.cleanUsers
+#GET         /clean              controllers.Application.cleanUsers
 GET         /users              controllers.Application.showUsers
 GET         /ids                controllers.Application.showIds
 
