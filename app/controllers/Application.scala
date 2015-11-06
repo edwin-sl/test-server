@@ -1,6 +1,6 @@
 package controllers
 
-import model.{User, Users}
+import model.Users
 import play.api.Play
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.{WSResponse, WS}
