@@ -14,7 +14,7 @@ object RedisManager {
   val r = new RedisClient(HOST, PORT, 0, SECRET)
 
   def setValue(key: String, value: String) = {
-    r.set(key, value)
+    r.setnx(key, value)
   }
 
   def getValue(key: String): String = {

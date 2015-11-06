@@ -126,7 +126,7 @@ object Application extends Controller {
         (body.\("user").as[String], body.\("id").as[String])
       }
     }
-    val response = if(Users.addUser(User(user_data._1, user_data._2)))
+    val response = if(Users.addUser(user_data._1, user_data._2))
       Json.obj("status" -> "ok")
     else
       Json.obj("status" -> "fail")
@@ -134,10 +134,10 @@ object Application extends Controller {
     Ok(response)
   }}
 
-  def showIds = Action{
-    Ok(Json.obj("status" -> "ok",
-      "data" -> Users.getIds))
-  }
+//  def showIds = Action{
+//    Ok(Json.obj("status" -> "ok",
+//      "data" -> Users.getIds))
+//  }
 
   def showUsers = Action{
     Ok(Json.obj("status" -> "ok",
