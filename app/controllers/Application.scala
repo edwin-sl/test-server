@@ -138,12 +138,13 @@ object Application extends Controller {
   }
 
   def showUsers = Action{
+//    Ok(RequestResponse.Success(Users.getUsers))
     Ok(Json.obj("status" -> "ok",
       "data" -> Users.getUsers))
   }
 
   def cleanUsers = Action{
     Users.cleanUsers()
-    Ok(Json.obj("status" -> "ok"))
+    Ok(RequestResponse.Success)
   }
 }

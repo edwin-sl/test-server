@@ -9,8 +9,10 @@ import play.api.libs.json.{JsObject, JsValue, Json}
  */
 object RequestResponse {
 
-  def Success = {
-
+  implicit val jsonData: JsValue = Json.obj()
+  def Success(implicit data: JsValue): JsValue = {
+    Json.obj("status" -> "ok")
+    .++(data.as[JsObject])
   }
 
   def Error = {
