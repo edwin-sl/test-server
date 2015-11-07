@@ -48,7 +48,6 @@ object Application extends Controller {
     val response = if(id.isEmpty) {
       Json.obj("status" -> "error")
     } else {
-//      val msg = Json.obj("to" -> id)
       val msg = GCMMessage.createMessage(MessageType.Message, id)
 
       val msgJson = sendGCM(msg)
@@ -69,10 +68,6 @@ object Application extends Controller {
     val response = if(id.isEmpty) {
       Json.obj("status" -> "error")
     } else {
-//      val msg = Json.obj(
-//        "data" -> data,
-//        "to" -> id
-//      )
       val msg = GCMMessage.createMessage(MessageType.Message, id, data)
       val msgJson = sendGCM(msg)
       Json.obj(
@@ -88,7 +83,6 @@ object Application extends Controller {
 
   def broadcastNotification = Action{ implicit req => {
     val ids = Users.getIds
-//    val msg = Json.obj("registration_ids" -> ids)
     val msg = GCMMessage.createBroadcast(MessageType.Broadcast, ids)
     val msgJson = sendGCM(msg)
     val response = Json.obj(
@@ -104,10 +98,6 @@ object Application extends Controller {
   def broadcastMessage = Action{ implicit req => {
     val data = req.body.asJson.getOrElse(Json.obj("status" -> "error"))
     val ids = Users.getIds
-//    val msg = Json.obj(
-//      "data" -> data,
-//      "registration_ids" -> ids
-//    )
     val msg = GCMMessage.createBroadcast(MessageType.Broadcast, ids, data)
 
     val msgJson = sendGCM(msg)
