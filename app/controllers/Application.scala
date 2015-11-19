@@ -131,12 +131,10 @@ object Application extends Controller {
     else if(Users.addUser(user_data._1, user_data._2)) {
       val msg = GCMMessage.createBroadcast(MessageType.Register, Users.getIds)
       sendGCM(msg)
-//      Json.obj("status" -> "ok")
       RequestResponse.Success(Json.obj("data" -> Json.obj("user" -> user_data._1)))
     }
     else
       RequestResponse.Error
-//      Json.obj("status" -> "error")
 
     Ok(response)
   }}
@@ -147,8 +145,6 @@ object Application extends Controller {
 
   def showUsers = Action{
     Ok(RequestResponse.Success(Json.obj("data" -> Users.getUsers)))
-//    Ok(Json.obj("status" -> "ok",
-//      "data" -> Users.getUsers))
   }
 
   def cleanUsers = Action{
