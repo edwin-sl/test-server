@@ -63,6 +63,7 @@ object Application extends Controller {
   }}
 
   def sendMessage(user: String) = Action{ implicit req => {
+    println(req.body)
     val data = req.body.asJson.getOrElse(Json.obj("status" -> "failed"))
     val id = Users.getId(user)
     val response = if(id.isEmpty) {
@@ -96,18 +97,25 @@ object Application extends Controller {
   }}
 
   def broadcastMessage = Action{ implicit req => {
-    val data = req.body.asJson.getOrElse(Json.obj("status" -> "error"))
-    val ids = Users.getIds
-    val msg = GCMMessage.createBroadcast(MessageType.Broadcast, ids, data)
+    println(req.body)
+    val data = req.body.asJson.getOrElse(Json.obj())
 
-    val msgJson = sendGCM(msg)
-    val response = Json.obj(
-      "status" -> {
-        if(msgJson.\("success").as[Int] > 0)
-          "ok" else "error"
-      },
-      "data" -> msgJson
-    )
+    val response = if(data.\("message").asOpt[String].isDefined && data.\("from").asOpt[String].isDefined) {
+      val ids = Users.getIds
+      val msg = GCMMessage.createBroadcast(MessageType.Broadcast, ids, data)
+
+      val msgJson = sendGCM(msg)
+      Json.obj(
+        "status" -> {
+          if (msgJson.\("success").as[Int] > 0)
+            "ok"
+          else "error"
+        },
+        "data" -> msgJson
+      )
+    } else {
+      RequestResponse.Error("Invalid Json")
+    }
     Ok(response)
   }}
 
