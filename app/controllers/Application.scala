@@ -11,6 +11,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 object Application extends Controller {
+  implicit val jsonData: JsValue = Json.obj()
 
   def index = Action {
     Ok(views.html.index("Your new application is ready."))
@@ -64,7 +65,7 @@ object Application extends Controller {
 
   def sendMessage(user: String) = Action{ implicit req => {
     println(req.body)
-    val data = req.body.asJson.getOrElse(Json.obj("status" -> "failed"))
+    val data = req.body.asJson.getOrElse(Json.obj("status" -> "error"))
     val id = Users.getId(user)
     val response = if(id.isEmpty) {
       Json.obj("status" -> "error")
@@ -105,17 +106,19 @@ object Application extends Controller {
       val msg = GCMMessage.createBroadcast(MessageType.Broadcast, ids, data)
 
       val msgJson = sendGCM(msg)
-      Json.obj(
-        "status" -> {
-          if (msgJson.\("success").as[Int] > 0)
-            "ok"
-          else "error"
-        },
-        "data" -> msgJson
-      )
-    } else {
-      RequestResponse.Error("Invalid Json")
-    }
+    val response =
+      if(data.\("message").toEither.isRight) {
+        Json.obj(
+          "status" -> {
+            if (msgJson.\("success").as[Int] > 0)
+              "ok"
+            else "error"
+          },
+          "data" -> msgJson
+        )
+      } else {
+        RequestResponse.Error(Json.obj("message" -> "Incorrect Json"))
+      }
     Ok(response)
   }}
 
@@ -132,23 +135,20 @@ object Application extends Controller {
     else if(Users.addUser(user_data._1, user_data._2)) {
       val msg = GCMMessage.createBroadcast(MessageType.Register, Users.getIds)
       sendGCM(msg)
-      Json.obj("status" -> "ok")
+      RequestResponse.Success(Json.obj("data" -> Json.obj("user" -> user_data._1)))
     }
     else
-      Json.obj("status" -> "error")
+      RequestResponse.Error
 
     Ok(response)
   }}
 
   def showIds = Action{
-    Ok(Json.obj("status" -> "ok",
-      "data" -> Users.getIds))
+    Ok(RequestResponse.Success(Json.obj("data" -> Users.getIds)))
   }
 
   def showUsers = Action{
-//    Ok(RequestResponse.Success(Users.getUsers))
-    Ok(Json.obj("status" -> "ok",
-      "data" -> Users.getUsers))
+    Ok(RequestResponse.Success(Json.obj("data" -> Users.getUsers)))
   }
 
   def cleanUsers = Action{
