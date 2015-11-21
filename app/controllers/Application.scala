@@ -17,36 +17,38 @@ object Application extends Controller {
     Ok(views.html.index("Your new application is ready."))
   }
 
-  def testGet = Action{ implicit req => {
+  def testGet = Action { implicit req => {
     Ok("Fue GET")
-  }}
+  }
+  }
 
-  def testPost = Action{ req => {
+  def testPost = Action { req => {
     val body = req.body
     println(body)
     Ok("Fue POST -> \n" + body)
-  }}
+  }
+  }
 
   def sendGCM(msg: JsValue): JsValue = {
-    println("Message -> \n" + Json.prettyPrint(msg))
+    println("GCM MESSAGE -> \n" + Json.prettyPrint(msg))
     val key = Play.current.configuration.getString("google.key").get
     val send = WS.url("https://gcm-http.googleapis.com/gcm/send")
       .withHeaders(
         ("Content-Type", "application/json"),
         ("Authorization", "key=" + key))
-    .post(msg)
+      .post(msg)
     val response = Await.result(send, Duration.Inf)
-    println("Response -> " + response.body)
-//    response.body
+    println("GCM RESPONSE -> " + response.body)
+    //    response.body
     val jsonResponse = response.json
     Json.obj(
       "success" -> jsonResponse.\("success").as[Int],
       "failure" -> jsonResponse.\("failure").as[Int])
   }
 
-  def sendNotification(user: String) = Action{ implicit req => {
+  def sendNotification(user: String) = Action { implicit req => {
     val id = Users.getId(user)
-    val response = if(id.isEmpty) {
+    val response = if (id.isEmpty) {
       Json.obj("status" -> "error")
     } else {
       val msg = GCMMessage.createMessage(MessageType.Message, id)
@@ -55,59 +57,28 @@ object Application extends Controller {
       Json.obj(
         "status" -> {
           if (msgJson.\("success").as[Int] > 0)
-            "ok" else "error"
+            "ok"
+          else "error"
         },
         "data" -> msgJson
       )
     }
     Ok(response)
-  }}
+  }
+  }
 
-  def sendMessage(user: String) = Action{ implicit req => {
+  def sendMessage(user: String) = Action { implicit req => {
     println(req.body)
     val data = req.body.asJson.getOrElse(Json.obj("status" -> "error"))
-    val id = Users.getId(user)
-    val response = if(id.isEmpty) {
-      Json.obj("status" -> "error")
-    } else {
-      val msg = GCMMessage.createMessage(MessageType.Message, id, data)
-      val msgJson = sendGCM(msg)
-      Json.obj(
-        "status" -> {
-          if (msgJson.\("success").as[Int] > 0)
-            "ok" else "error"
-        },
-        "data" -> msgJson
-      )
-    }
-    Ok(response)
-  }}
 
-  def broadcastNotification = Action{ implicit req => {
-    val ids = Users.getIds
-    val msg = GCMMessage.createBroadcast(MessageType.Broadcast, ids)
-    val msgJson = sendGCM(msg)
-    val response = Json.obj(
-      "status" -> {
-        if(msgJson.\("success").as[Int] > 0)
-          "ok" else "error"
-      },
-      "data" -> msgJson
-    )
-    Ok(response)
-  }}
+    val response = if (data.\("message").asOpt[String].isDefined && data.\("from").asOpt[String].isDefined) {
 
-  def broadcastMessage = Action{ implicit req => {
-    println(req.body)
-    val data = req.body.asJson.getOrElse(Json.obj())
-
-    val response = if(data.\("message").asOpt[String].isDefined && data.\("from").asOpt[String].isDefined) {
-      val ids = Users.getIds
-      val msg = GCMMessage.createBroadcast(MessageType.Broadcast, ids, data)
-
-      val msgJson = sendGCM(msg)
-    val response =
-      if(data.\("message").toEither.isRight) {
+      val id = Users.getId(user)
+      if (id.isEmpty) {
+        RequestResponse.Error(Json.obj("message" -> "Unknown user"))
+      } else {
+        val msg = GCMMessage.createMessage(MessageType.Message, id, data)
+        val msgJson = sendGCM(msg)
         Json.obj(
           "status" -> {
             if (msgJson.\("success").as[Int] > 0)
@@ -116,13 +87,55 @@ object Application extends Controller {
           },
           "data" -> msgJson
         )
-      } else {
-        RequestResponse.Error(Json.obj("message" -> "Incorrect Json"))
       }
+    } else {
+      RequestResponse.Error(Json.obj("message" -> "Incorrect Json"))
+    }
     Ok(response)
-  }}
+  }
+  }
 
-  def registerAndroid = Action{ implicit req => {
+  def broadcastNotification = Action { implicit req => {
+    val ids = Users.getIds
+    val msg = GCMMessage.createBroadcast(MessageType.Broadcast, ids)
+    val msgJson = sendGCM(msg)
+    val response = Json.obj(
+      "status" -> {
+        if (msgJson.\("success").as[Int] > 0)
+          "ok"
+        else "error"
+      },
+      "data" -> msgJson
+    )
+    Ok(response)
+  }
+  }
+
+  def broadcastMessage = Action { implicit req => {
+    println(req.body)
+    val data = req.body.asJson.getOrElse(Json.obj())
+
+    val response = if (data.\("message").asOpt[String].isDefined && data.\("from").asOpt[String].isDefined) {
+      val ids = Users.getIds
+      val msg = GCMMessage.createBroadcast(MessageType.Broadcast, ids, data)
+      val msgJson = sendGCM(msg)
+
+      Json.obj(
+        "status" -> {
+          if (msgJson.\("success").asOpt[Int].getOrElse(0) > 0)
+            "ok"
+          else "error"
+        },
+        "data" -> msgJson
+      )
+    } else {
+      RequestResponse.Error(Json.obj("message" -> "Incorrect Json"))
+    }
+    Ok(response)
+  }
+  }
+
+  def registerAndroid = Action { implicit req => {
     val user_data: (String, String) = req.method match {
       case "GET" => (req.getQueryString("user").getOrElse(""), req.getQueryString("id").getOrElse(""))
       case "POST" => {
@@ -130,9 +143,10 @@ object Application extends Controller {
       }
     }
 
-    val response = if(user_data._1.isEmpty || user_data._2.isEmpty)
-      Json.obj("status" -> "error")
-    else if(Users.addUser(user_data._1, user_data._2)) {
+    val response = if (user_data._1.isEmpty || user_data._2.isEmpty)
+      RequestResponse.Error(Json.obj("message" -> "Missing Parameter"))
+//      Json.obj("status" -> "error")
+    else if (Users.addUser(user_data._1, user_data._2)) {
       val msg = GCMMessage.createBroadcast(MessageType.Register, Users.getIds)
       sendGCM(msg)
       RequestResponse.Success(Json.obj("data" -> Json.obj("user" -> user_data._1)))
@@ -141,17 +155,18 @@ object Application extends Controller {
       RequestResponse.Error
 
     Ok(response)
-  }}
+  }
+  }
 
-  def showIds = Action{
+  def showIds = Action {
     Ok(RequestResponse.Success(Json.obj("data" -> Users.getIds)))
   }
 
-  def showUsers = Action{
+  def showUsers = Action {
     Ok(RequestResponse.Success(Json.obj("data" -> Users.getUsers)))
   }
 
-  def cleanUsers = Action{
+  def cleanUsers = Action {
     Users.cleanUsers()
     Ok(RequestResponse.Success)
   }
