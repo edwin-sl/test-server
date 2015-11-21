@@ -71,7 +71,7 @@ object Application extends Controller {
     println(req.body)
     val data = req.body.asJson.getOrElse(Json.obj("status" -> "error"))
 
-    val response = if (data.\("message").asOpt[String].isDefined && data.\("from").asOpt[String].isDefined) {
+    val response = if (data.\("message").asOpt[String].isDefined && data.\("sender").asOpt[String].isDefined) {
 
       val id = Users.getId(user)
       if (id.isEmpty) {
@@ -115,7 +115,7 @@ object Application extends Controller {
     println(req.body)
     val data = req.body.asJson.getOrElse(Json.obj())
 
-    val response = if (data.\("message").asOpt[String].isDefined && data.\("from").asOpt[String].isDefined) {
+    val response = if (data.\("message").asOpt[String].isDefined && data.\("sender").asOpt[String].isDefined) {
       val ids = Users.getIds
       val msg = GCMMessage.createBroadcast(MessageType.Broadcast, ids, data)
       val msgJson = sendGCM(msg)
