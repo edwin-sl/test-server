@@ -19,32 +19,13 @@ object Application extends Controller {
 
   def testGet = Action { implicit req => {
     Ok("Fue GET")
-  }
-  }
+  }}
 
   def testPost = Action { req => {
     val body = req.body
     println(body)
     Ok("Fue POST -> \n" + body)
-  }
-  }
-
-  def sendGCM(msg: JsValue): JsValue = {
-    println("GCM MESSAGE -> \n" + Json.prettyPrint(msg))
-    val key = Play.current.configuration.getString("google.key").get
-    val send = WS.url("https://gcm-http.googleapis.com/gcm/send")
-      .withHeaders(
-        ("Content-Type", "application/json"),
-        ("Authorization", "key=" + key))
-      .post(msg)
-    val response = Await.result(send, Duration.Inf)
-    println("GCM RESPONSE -> " + response.body)
-    //    response.body
-    val jsonResponse = response.json
-    Json.obj(
-      "success" -> jsonResponse.\("success").as[Int],
-      "failure" -> jsonResponse.\("failure").as[Int])
-  }
+  }}
 
   def sendNotification(user: String) = Action { implicit req => {
     val id = Users.getId(user)
@@ -64,8 +45,7 @@ object Application extends Controller {
       )
     }
     Ok(response)
-  }
-  }
+  }}
 
   def sendMessage(user: String) = Action { implicit req => {
     println(req.body)
@@ -92,8 +72,7 @@ object Application extends Controller {
       RequestResponse.Error(Json.obj("message" -> "Incorrect Json"))
     }
     Ok(response)
-  }
-  }
+  }}
 
   def broadcastNotification = Action { implicit req => {
     val ids = Users.getIds
@@ -108,7 +87,23 @@ object Application extends Controller {
       "data" -> msgJson
     )
     Ok(response)
-  }
+  }}
+
+  def sendGCM(msg: JsValue): JsValue = {
+    println("GCM MESSAGE -> \n" + Json.prettyPrint(msg))
+    val key = Play.current.configuration.getString("google.key").get
+    val send = WS.url("https://gcm-http.googleapis.com/gcm/send")
+      .withHeaders(
+        ("Content-Type", "application/json"),
+        ("Authorization", "key=" + key))
+      .post(msg)
+    val response = Await.result(send, Duration.Inf)
+    println("GCM RESPONSE -> " + response.body)
+    //    response.body
+    val jsonResponse = response.json
+    Json.obj(
+      "success" -> jsonResponse.\("success").as[Int],
+      "failure" -> jsonResponse.\("failure").as[Int])
   }
 
   def broadcastMessage = Action { implicit req => {
@@ -132,8 +127,7 @@ object Application extends Controller {
       RequestResponse.Error(Json.obj("message" -> "Incorrect Json"))
     }
     Ok(response)
-  }
-  }
+  }}
 
   def registerAndroid = Action { implicit req => {
     val user_data: (String, String) = req.method match {
@@ -145,7 +139,7 @@ object Application extends Controller {
 
     val response = if (user_data._1.isEmpty || user_data._2.isEmpty)
       RequestResponse.Error(Json.obj("message" -> "Missing Parameter"))
-//      Json.obj("status" -> "error")
+    //      Json.obj("status" -> "error")
     else if (Users.addUser(user_data._1, user_data._2)) {
       val msg = GCMMessage.createBroadcast(MessageType.Register, Users.getIds)
       sendGCM(msg)
@@ -155,8 +149,7 @@ object Application extends Controller {
       RequestResponse.Error
 
     Ok(response)
-  }
-  }
+  }}
 
   def showIds = Action {
     Ok(RequestResponse.Success(Json.obj("data" -> Users.getIds)))
